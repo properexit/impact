@@ -1,57 +1,7 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.egg-info/
-
-# Virtual environments
-venv/
-venv-offensive/
-.venv/
-.env
-
-# Jupyter
-.ipynb_checkpoints/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Editors
-.vscode/
-.idea/
-
-# Logs / outputs
-logs/
-outputs/
-runs/
-checkpoints/
-*.log
-
-# Data (keep structure but not raw files)
+cache/
 data/
-!data/README.md
-
-# Model files
-*.pt
-*.pth
-*.ckpt
-
-# Cache
-.cache/
-hf_cache/
-huggingface/
-transformers_cache/
-
-# Misc
-*.swp
-*.swo
-lightning_logs/
-
-geo_env/
+input/
+report.pdf
+*.jsonl
 __pycache__/
-*.pycgeo_env/
-geo_env/
-__pycache__/
-*.pyc
+.geo_env/
