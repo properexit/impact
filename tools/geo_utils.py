@@ -1,19 +1,27 @@
-from shapely.geometry import Point
+from geopy.geocoders import Nominatim
 
-import geopandas as gpd
-from shapely.geometry import Point
+def get_bbox(polygon):
+    return polygon.bounds
 
-def compute_distance_to_features(point, gdf):
-    if gdf is None or gdf.empty:
-        return None
 
-    # Convert to GeoDataFrame
-    point_gdf = gpd.GeoDataFrame(geometry=[point], crs="EPSG:4326")
 
-    # Project both to metric CRS (Germany → EPSG:3857 or 32632)
-    gdf_proj = gdf.to_crs(epsg=3857)
-    point_proj = point_gdf.to_crs(epsg=3857)
+def get_location_name(lat, lon):
+    try:
+        geolocator = Nominatim(user_agent="geo_app")
+        location = geolocator.reverse((lat, lon), language="en")
 
-    distances = gdf_proj.geometry.distance(point_proj.geometry.iloc[0])
+        address = location.raw.get("address", {})
 
-    return distances.min()
+        city = (
+            address.get("city")
+            or address.get("town")
+            or address.get("village")
+            or address.get("state")
+        )
+
+        country = address.get("country")
+
+        return city, country
+
+    except Exception:
+        return "Unknown", "Unknown"
