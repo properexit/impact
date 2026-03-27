@@ -550,6 +550,9 @@ with col_map:
     folium.LayerControl().add_to(m)
     map_data = st_folium(m, height=520, width=None, returned_objects=["last_active_drawing"])
 
+# ... EVERYTHING ABOVE REMAINS EXACTLY SAME ...
+
+
 with col_side:
     # ── Polygon section ────────────────────────────────────────────────────────
     st.markdown('<div class="panel-label">Area of Interest</div>', unsafe_allow_html=True)
@@ -600,24 +603,38 @@ with col_side:
     # ── Documents section ──────────────────────────────────────────────────────
     st.markdown('<div class="panel-label">Supporting Documents</div>', unsafe_allow_html=True)
     uploaded_files = st.file_uploader(
-        "PDFs, CSVs, images",
-        type=["pdf", "csv", "png", "jpg", "jpeg"],
+        "Text, PDFs, CSVs, IMG",
+        type=["pdf", "csv", "png", "jpg", "jpeg", "txt"],
         accept_multiple_files=True,
         label_visibility="collapsed",
     )
-    if uploaded_files:
-        for uf in uploaded_files:
-            size_kb = len(uf.getvalue()) / 1024
-            st.markdown(
-                f'<div class="upload-badge">📎 {uf.name} &nbsp;·&nbsp; {size_kb:.0f} KB</div>',
-                unsafe_allow_html=True
-            )
 
-    st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+# ✅ KEEP OUTSIDE (IMPORTANT FIX)
+uploaded_txt_links = None
 
-    # ── Run button ─────────────────────────────────────────────────────────────
-    st.markdown('<div class="panel-label">Analysis</div>', unsafe_allow_html=True)
-    run = st.button("Analyse", type="primary", use_container_width=True)
+if uploaded_files:
+    for uf in uploaded_files:
+        size_kb = len(uf.getvalue()) / 1024
+
+        st.markdown(
+            f'<div class="upload-badge">📎 {uf.name} &nbsp;·&nbsp; {size_kb:.0f} KB</div>',
+            unsafe_allow_html=True
+        )
+
+        # ✅ detect .txt file
+        if uf.name.endswith(".txt"):
+            try:
+                content = uf.getvalue().decode("utf-8")
+                uploaded_txt_links = [l.strip() for l in content.split("\n") if l.strip()]
+                st.success(f"Loaded {len(uploaded_txt_links)} WFS links")
+            except Exception as e:
+                st.error(f"Failed to read txt: {e}")
+
+# ✅ ALWAYS SHOW BUTTON (FIXED)
+st.markdown("<div style='height:16px'></div>", unsafe_allow_html=True)
+st.markdown('<div class="panel-label">Analysis</div>', unsafe_allow_html=True)
+
+run = st.button("Analyse", type="primary", use_container_width=True)
 
 
 # ── Pipeline execution ─────────────────────────────────────────────────────────
@@ -628,7 +645,11 @@ if run:
 
     with st.status("Running analysis pipeline...", expanded=True) as status_box:
         try:
-            report_data = main(status_callback=st.write, uploaded_files=uploaded_files)
+            report_data = main(
+                status_callback=st.write,
+                uploaded_files=uploaded_files,
+                wfs_links=uploaded_txt_links
+            )
             status_box.update(label="Analysis complete", state="complete")
         except Exception as e:
             status_box.update(label=f"Error: {e}", state="error")

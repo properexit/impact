@@ -49,13 +49,45 @@ def append_jsonl(record, path="data/site_features.jsonl"):
         f.write(json.dumps(record) + "\n")
 
 
-# ✅ UPDATED SIGNATURE (added uploaded_files)
-def main(status_callback=print, uploaded_files=None):
+# ✅ UPDATED SIGNATURE
+def main(status_callback=print, uploaded_files=None, wfs_links=None):
 
     risk_score = 0  
     flags = []
 
     os.makedirs("data", exist_ok=True)
+
+    # ✅ save uploaded WFS links
+    if wfs_links:
+        try:
+            with open("data/links.txt", "w") as f:
+                f.write("\n".join(wfs_links))
+            status_callback(f"Saved {len(wfs_links)} WFS links to data/links.txt")
+
+            # ✅ FORCE rebuild when new links are uploaded
+            if os.path.exists("data/nrw_layers.json"):
+                os.remove("data/nrw_layers.json")
+
+        except Exception as e:
+            status_callback(f"Failed to save WFS links: {e}")
+
+
+        # ✅ AUTO-RUN LAYER BUILDER
+        nrw_layers_path = "data/nrw_layers.json"
+
+        if os.path.exists("data/links.txt") and not os.path.exists(nrw_layers_path):
+            status_callback("Building NRW layer config from uploaded links...")
+
+            try:
+                from agents.wfs_layer_builder import generate_nrw_layers
+                generate_nrw_layers(
+                    input_file="data/links.txt",
+                    output_file=nrw_layers_path
+                )
+                status_callback("✅ Layer config generated")
+
+            except Exception as e:
+                status_callback(f"⚠️ Layer builder failed: {e}")
 
     status_callback("Loading polygon...")
     polygon = load_polygon()
@@ -113,11 +145,10 @@ def main(status_callback=print, uploaded_files=None):
     if in_nrw:
         status_callback("Fetching NRW WFS layers (ALKIS, geology, environment, topo)...")
         try:
-            # ✅ FIX: use buffered polygon
             buffered_polygon = polygon.buffer(0.002)
 
             nrw_records = fetch_all_nrw_layers(
-                buffered_polygon,   # ✅ changed
+                buffered_polygon,
                 bbox,
                 status_callback=status_callback
             )
@@ -146,7 +177,7 @@ def main(status_callback=print, uploaded_files=None):
     else:
         status_callback("Skipping NRW WFS (outside NRW bounds)")
 
-    # ✅ NEW: USER DOCUMENT INGESTION
+    # ✅ USER DOCUMENT INGESTION (unchanged)
     if uploaded_files:
         status_callback("Processing uploaded documents...")
         for file in uploaded_files:
