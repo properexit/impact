@@ -1,7 +1,16 @@
-cache/
+# Data / runtime
 data/
+cache/
 input/
-report.pdf
-*.jsonl
+*.pdf
+
+# Python
 __pycache__/
-.geo_env/
+*.pyc
+
+# Env
+geo_env/
+.env
+
+# Mac
+.DS_Store

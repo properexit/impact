@@ -1,0 +1,12 @@
+{
+  "functional_area": {
+    "keywords": ["funktionaler prägung"],
+    "risk": 2,
+    "message": "Special functional land use (potential mixed/industrial use)"
+  },
+  "urban_area": {
+    "keywords": ["straße", "str.", "essen"],
+    "risk": 0,
+    "message": "Urban area"
+  }
+}
