@@ -1,12 +1,82 @@
 {
-  "functional_area": {
-    "keywords": ["funktionaler prägung"],
-    "risk": 2,
-    "message": "Special functional land use (potential mixed/industrial use)"
-  },
-  "urban_area": {
-    "keywords": ["straße", "str.", "essen"],
-    "risk": 0,
-    "message": "Urban area"
-  }
+  
+    "alkis_landuse": [
+      {
+        "match": ["industrie", "gewerbe"],
+        "score": 3,
+        "flag": "Industrial/commercial land nearby"
+      },
+      {
+        "match": ["wohnbaufläche"],
+        "score": -1,
+        "flag": "Residential area (low risk)"
+      },
+      {
+        "match": ["freizeit", "erholungsfläche", "sport"],
+        "score": -1,
+        "flag": "Recreational/green area (low risk)"
+      },
+      {
+        "match": ["landwirtschaft", "acker"],
+        "score": -1,
+        "flag": "Agricultural land (low risk)"
+      },
+      {
+        "match": ["wald", "forst"],
+        "score": 0,
+        "flag": "Forest area"
+      },
+      {
+        "match": ["weg", "straße", "strasse", "straßenverkehr", "verkehr"],
+        "score": 1,
+        "flag": "Transport infrastructure nearby"
+      }
+    ],
+
+  "alkis_buildings": [
+    {
+      "condition": "count > 50",
+      "score": 1,
+      "flag": "Moderate building density"
+    },
+    {
+      "condition": "count > 150",
+      "score": 2,
+      "flag": "High building density"
+    }
+  ],
+
+  "roads_atkis": [
+    {
+      "condition": "count > 0",
+      "score": 1,
+      "flag": "Road access present"
+    },
+    {
+      "condition": "count > 10",
+      "score": 2,
+      "flag": "High road density"
+    }
+  ],
+
+  "water_bodies": [
+    {
+      "condition": "count > 0",
+      "score": 1,
+      "flag": "Water body nearby"
+    }
+  ],
+
+  "elevation_points": [
+    {
+      "condition": "count > 10",
+      "score": 1,
+      "flag": "Some terrain variation"
+    },
+    {
+      "condition": "count > 50",
+      "score": 2,
+      "flag": "High terrain variation"
+    }
+  ]
 }

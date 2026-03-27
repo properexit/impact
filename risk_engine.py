@@ -1,24 +1,53 @@
 import json
+import os
 
-def load_rules(path="risk_rules.json"):
+
+def load_rules(path="data/risk_rules.json"):
+    if not os.path.exists(path):
+        return {}
     with open(path) as f:
         return json.load(f)
 
 
-def evaluate_nrw(nrw_records, rules):
-    risks = []
+def evaluate_nrw(records, rules):
     score = 0
+    flags = []
 
-    for rec in nrw_records:
-        if rec.get("status") != "found":
+    for r in records:
+        label = r.get("label")
+        status = r.get("status")
+
+        if status != "found":
             continue
 
-        for feature in rec.get("features", []):
-            text = " ".join([str(v).lower() for v in feature.values() if v])
-            
-            for rule in rules.values():
-                if any(k in text for k in rule["keywords"]):
-                    risks.append(rule["message"])
-                    score += rule["risk"]
+        count = r.get("count", 0)
+        features = r.get("features", [])
 
-    return score, list(set(risks))
+        layer_rules = rules.get(label, [])
+
+        for rule in layer_rules:
+
+            if "condition" in rule:
+                condition = rule["condition"]
+
+                try:
+                    if eval(condition, {}, {"count": count}):  # ✅ FIXED
+                        score += rule.get("score", 0)
+                        flags.append(rule.get("flag"))
+                except Exception:
+                    continue
+
+            # ✅ MATCH RULE (text-based)
+            if "match" in rule:
+                for f in features:
+                    text = " ".join(str(v).lower() for v in f.values())
+                    print(f"[DEBUG] Checking {label}: {text[:100]}")
+                    
+                    for keyword in rule["match"]:
+                        if keyword in text:
+                            print(f"[MATCH] {keyword} → +{rule.get('score')}")
+                            score += rule.get("score", 0)
+                            flags.append(rule.get("flag"))
+                            break
+
+    return score, flags
