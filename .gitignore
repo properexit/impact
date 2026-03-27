@@ -14,3 +14,5 @@ geo_env/
 
 # Mac
 .DS_Storetemp.txt
+temp.txt
+wfs_test.py
